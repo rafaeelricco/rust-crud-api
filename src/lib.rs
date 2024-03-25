@@ -1,11 +1,11 @@
-pub use mongodb::{Client};
+mod routes;
+mod start_server;
+
 pub use mongodb::options::ClientOptions;
 pub use std::net::TcpListener;
 pub mod models;
 pub mod note_models;
 pub use dotenv;
-mod start_server;
 pub use start_server::run;
-mod routes;
 pub use routes::*;
 pub mod controllers;
