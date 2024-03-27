@@ -6,6 +6,7 @@ use std::net::TcpListener;
 use actix_web::dev::Server;
 use serde::Serialize;
 use chrono::Utc;
+use crate::routes::config;
 
 #[derive(Serialize)]
 struct ApiInfo {
@@ -39,15 +40,8 @@ pub fn run(listener: TcpListener, db: Database) -> Result<Server, std::io::Error
     let db = web::Data::new(db);
     let server = HttpServer::new(move || {
         App::new()
-            .route("/", web::get().to(root)) 
-            .service(web::scope("/notes")
-                .route("", web::post().to(crate::controllers::create_note))
-                .route("", web::get().to(crate::controllers::list_notes))
-                // .route("/{id}", web::get().to(crate::controllers::get_note))
-                // .route("/{id}", web::put().to(crate::controllers::update_note))
-                // .route("/{id}", web::delete().to(crate::controllers::delete_note))
-            )
-            .app_data(db.clone())
+            .configure(config) // Configura as rotas
+            .app_data(db.clone()).route("/", web::get().to(root))
     })
     .listen(listener)?
     .run();
