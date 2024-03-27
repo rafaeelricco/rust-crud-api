@@ -1,10 +1,9 @@
-use serde::{Deserialize, Serialize};
-
+use mongodb::options::IndexOptions;
 use mongodb::bson::oid::ObjectId;
-use mongodb::options::{IndexOptions};
 use mongodb::IndexModel;
 use mongodb::Client;
 
+use serde::{Deserialize, Serialize};
 use bson::doc;
 
 #[derive(Deserialize, Serialize, Debug)]

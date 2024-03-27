@@ -1,5 +1,3 @@
-// models/note_models.rs
-
 use serde::{Deserialize, Serialize};
 use mongodb::options::{IndexOptions};
 use mongodb::IndexModel;

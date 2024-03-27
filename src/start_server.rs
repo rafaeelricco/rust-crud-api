@@ -1,4 +1,4 @@
-use crate::routes::*;
+
 
 use actix_web::{web, App, HttpServer, Responder, HttpResponse};
 use mongodb::Database;
@@ -39,9 +39,14 @@ pub fn run(listener: TcpListener, db: Database) -> Result<Server, std::io::Error
     let db = web::Data::new(db);
     let server = HttpServer::new(move || {
         App::new()
-            .route("/", web::get().to(root)) // Adicione esta linha para a rota raiz
-            .route("/createNote", web::post().to(create_note_route))
-            // Adicione as rotas para read_note, update_note e delete_note aqui.
+            .route("/", web::get().to(root)) 
+            .service(web::scope("/notes")
+                .route("", web::post().to(crate::controllers::create_note))
+                .route("", web::get().to(crate::controllers::list_notes))
+                // .route("/{id}", web::get().to(crate::controllers::get_note))
+                // .route("/{id}", web::put().to(crate::controllers::update_note))
+                // .route("/{id}", web::delete().to(crate::controllers::delete_note))
+            )
             .app_data(db.clone())
     })
     .listen(listener)?
