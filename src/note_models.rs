@@ -19,7 +19,7 @@ pub async fn create_title_unique(client: &Client) {
         .options(options)
         .build();
     client
-        .database("RUSTcurd")
+        .database("Notes")
         .collection::<Note>("Notes")
         .create_index(model, None)
         .await

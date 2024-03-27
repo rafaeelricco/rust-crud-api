@@ -11,6 +11,7 @@ pub struct NoteData {
 
 pub async fn create_note(db: web::Data<Database>, info: web::Json<NoteData>) -> impl Responder {
     let data = Note {
+        id: None,
         title: info.title.clone(),
         content: info.content.clone(),
     };
