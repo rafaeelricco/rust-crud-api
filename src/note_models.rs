@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
-use mongodb::options::{IndexOptions};
-use mongodb::IndexModel;
-use mongodb::Client;
 use bson::doc;
+use mongodb::options::IndexOptions;
+use mongodb::Client;
+use mongodb::IndexModel;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
 pub struct Note {
