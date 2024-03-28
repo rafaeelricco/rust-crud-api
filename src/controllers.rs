@@ -2,16 +2,18 @@ use crate::models::{NewNote, Note};
 use actix_web::{web, HttpResponse, Responder};
 use futures::stream::StreamExt;
 use mongodb::Database;
+use mongodb::{bson::doc, Collection};
 use uuid::Uuid;
 
 pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> impl Responder {
     let collection = db.collection::<Note>("Notes");
 
     let note = Note {
-        id: Uuid::new_v4(),
+        id: Uuid::new_v4().to_string(),
         title: info.title.clone(),
         content: info.content.clone(),
     };
+    println!("Nota a ser inserida: {:?}", note);
 
     let note_clone = note.clone();
 
@@ -41,4 +43,42 @@ pub async fn list_notes(db: web::Data<Database>) -> impl Responder {
     println!("Notas listadas: {:?}", notes);
 
     HttpResponse::Ok().json(notes)
+}
+
+pub async fn get_note_by_id(db: web::Data<Database>, id: web::Path<String>) -> impl Responder {
+    let uuid = match Uuid::parse_str(&id.into_inner()) {
+        Ok(uuid) => {
+            println!("UUID convertido: {}", uuid);
+            uuid
+        }
+        Err(_) => return HttpResponse::BadRequest().body("Invalid UUID"),
+    };
+
+    println!("Buscando nota com id: {:?}", uuid);
+
+    let collection: Collection<Note> = db.collection("Notes");
+
+    let uuid_bson = uuid.to_string();
+    print!("UUID BSON: {:?}", uuid_bson);
+
+    let filter = doc! { "id": uuid_bson };
+    print!("Filtro: {:?}", filter);
+
+    let note = collection.find_one(filter, None).await;
+    println!("Nota: {:?}", note);
+
+    match note {
+        Ok(Some(note)) => {
+            println!("Nota encontrada: {:?}", note);
+            HttpResponse::Ok().json(note)
+        }
+        Ok(None) => {
+            println!("Nota não encontrada.");
+            HttpResponse::NotFound().finish()
+        }
+        Err(e) => {
+            println!("Erro ao buscar nota: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
 }

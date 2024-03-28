@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct Note {
-    pub id: Uuid,
+    pub id: String,
     pub title: String,
     pub content: String,
 }
