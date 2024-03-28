@@ -14,18 +14,14 @@ pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> i
         content: info.content.clone(),
     };
 
-    let result = collection.insert_one(note, None).await;
+    let note_clone = note.clone();
 
-    let note = Note {
-        id: Uuid::new_v4(), 
-        title: info.title.clone(),
-        content: info.content.clone(),
-    };
+    let result = collection.insert_one(note, None).await;
 
     match result {
         Ok(_) => {
-            println!("Nota inserida com sucesso."); // Log de sucesso
-            HttpResponse::Ok().json(note) // Return note directly
+            println!("Nota inserida com sucesso."); 
+            HttpResponse::Ok().json(note_clone)
         },
         Err(e) => {
             println!("Erro ao inserir nota: {:?}", e); 
