@@ -1,4 +1,4 @@
-use crate::models::{NewNote, Note};
+use crate::models::{CreateAndUpdateNote, Note};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
 use futures::stream::StreamExt;
@@ -7,37 +7,17 @@ use mongodb::{bson::doc, Collection};
 use serde_json::json;
 use uuid::Uuid;
 
-pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> impl Responder {
-    let collection = db.collection::<Note>("Notes");
-
-    let note = Note {
-        id: Uuid::new_v4().to_string(),
-        title: info.title.clone(),
-        content: info.content.clone(),
-        created_at: Utc::now().to_rfc3339(),
-        updated_at: Utc::now().to_rfc3339(),
-        tags: info.tags.clone().unwrap_or_default(),
-        categories: info.categories.clone().unwrap_or_default(),
-        attachments: vec![],
-        version_history: vec![],
-        export_options: vec![],
-    };
-    println!("Nota a ser inserida: {:?}", note);
-
-    let note_clone = note.clone();
-
-    let result = collection.insert_one(note, None).await;
-
-    match result {
-        Ok(_) => HttpResponse::Ok().json(note_clone),
-        Err(e) => {
-            println!("Erro ao inserir nota: {:?}", e);
-            HttpResponse::InternalServerError().finish()
+fn convert_uuid(uuid: String) -> Uuid {
+    match Uuid::parse_str(&uuid) {
+        Ok(uuid) => {
+            println!("UUID convertido: {}", uuid);
+            uuid
         }
+        Err(_) => panic!("Invalid UUID"),
     }
 }
 
-pub async fn list_notes(db: web::Data<Database>) -> impl Responder {
+pub async fn get_all_notes(db: web::Data<Database>) -> impl Responder {
     let collection = db.collection::<Note>("Notes");
     let cursor = collection
         .find(None, None)
@@ -52,19 +32,9 @@ pub async fn list_notes(db: web::Data<Database>) -> impl Responder {
 }
 
 pub async fn get_note_by_id(db: web::Data<Database>, id: web::Path<String>) -> impl Responder {
-    let uuid = match Uuid::parse_str(&id.into_inner()) {
-        Ok(uuid) => {
-            println!("UUID convertido: {}", uuid);
-            uuid
-        }
-        Err(_) => return HttpResponse::BadRequest().body("Invalid UUID"),
-    };
-
-    println!("Buscando nota com id: {:?}", uuid);
-
     let collection: Collection<Note> = db.collection("Notes");
 
-    let uuid_bson = uuid.to_string();
+    let uuid_bson = convert_uuid(id.into_inner()).to_string();
     print!("UUID BSON: {:?}", uuid_bson);
 
     let filter = doc! { "id": uuid_bson };
@@ -89,7 +59,117 @@ pub async fn get_note_by_id(db: web::Data<Database>, id: web::Path<String>) -> i
     }
 }
 
-pub async fn delete_note(db: web::Data<Database>, id: web::Path<String>) -> impl Responder {
+pub async fn post_new_note(
+    db: web::Data<Database>,
+    info: web::Json<CreateAndUpdateNote>,
+) -> impl Responder {
+    let collection = db.collection::<Note>("Notes");
+
+    let note = Note {
+        id: Uuid::new_v4().to_string(),
+        title: info.title.clone(),
+        content: info.content.clone(),
+        created_at: Utc::now().to_rfc3339(),
+        updated_at: Utc::now().to_rfc3339(),
+        tags: info.tags.clone(),
+        categories: info.categories.clone(),
+        attachments: vec![],
+        version_history: vec![],
+        export_options: vec![],
+    };
+    println!("Nota a ser inserida: {:?}", note);
+
+    let note_clone = note.clone();
+
+    let result = collection.insert_one(note, None).await;
+
+    match result {
+        Ok(_) => HttpResponse::Ok().json(note_clone),
+        Err(e) => {
+            println!("Erro ao inserir nota: {:?}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+pub async fn patch_note(
+    db: web::Data<Database>,
+    id: web::Path<String>,
+    info: web::Json<CreateAndUpdateNote>,
+) -> impl Responder {
+    let collection: Collection<Note> = db.collection("Notes");
+    let uuid_bson = convert_uuid(id.into_inner()).to_string();
+    let filter = doc! { "id": uuid_bson };
+    let note = collection.find_one(filter, None).await;
+
+    match note {
+        Ok(Some(mut note)) => {
+            println!("Nota encontrada: {:?}", note);
+
+            if let Some(title) = info.title.clone() {
+                note.title = Some(title);
+            }
+
+            if let Some(content) = info.content.clone() {
+                note.content = Some(content);
+            }
+
+            if let Some(tags) = info.tags.clone() {
+                note.tags = Some(tags);
+            }
+
+            if let Some(categories) = info.categories.clone() {
+                note.categories = Some(categories);
+            }
+
+            note.updated_at = Utc::now().to_rfc3339();
+
+            let id_cl = convert_uuid(note.id.clone()).to_string();
+            println!("ID para atualização: {:?}", id_cl);
+
+            let note_updated = note.clone();
+
+            let result = collection
+                .replace_one(doc! { "id": id_cl }, note, None)
+                .await;
+            println!("Resultado da atualização: {:?}", result);
+
+            let res = json!({
+                "message": "Nota atualizada com sucesso!",
+                "nota": note_updated
+            });
+
+            match result {
+                Ok(_) => HttpResponse::Ok().json(res),
+                Err(e) => {
+                    println!("Erro ao atualizar nota: {:?}", e);
+                    let res = json!({
+                        "message": "Oopss! Ocorreu um erro ao atualizar a nota.",
+                        "error": e.to_string()
+                    });
+                    HttpResponse::Ok().json(res)
+                }
+            }
+        }
+        Ok(None) => {
+            println!("Nota não encontrada.");
+            let res = json!({
+                "message": "Oopss! Nota não encontrada. Verifique o ID informado."
+            });
+            HttpResponse::Ok().json(res)
+        }
+        Err(e) => {
+            println!("Erro ao buscar a nota: {:?}", e);
+            let res = json!({
+                "message": "Oopss! Ocorreu um erro ao buscar a nota. Verifique o ID informado.",
+                "error": e.to_string()
+            });
+            HttpResponse::Ok().json(res)
+        }
+    }
+}
+
+pub async fn delete_note_by_id(db: web::Data<Database>, id: web::Path<String>) -> impl Responder {
     let uuid = match Uuid::parse_str(&id.into_inner()) {
         Ok(uuid) => {
             println!("UUID convertido: {}", uuid);

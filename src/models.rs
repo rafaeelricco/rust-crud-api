@@ -4,23 +4,26 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct Note {
     pub id: String,
-    pub title: String,
-    pub content: String,
+    pub title: Option<String>,
+    pub content: Option<String>,
     pub created_at: String,
     pub updated_at: String,
-    pub tags: Vec<String>,
-    pub categories: Vec<String>,
+    pub tags: Option<Vec<String>>,
+    pub categories: Option<Vec<String>>,
     pub attachments: Vec<Attachment>,
     pub version_history: Vec<Version>,
     pub export_options: Vec<String>,
 }
 
-#[derive(Deserialize, Serialize)]
-pub struct NewNote {
-    pub title: String,
-    pub content: String,
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct CreateAndUpdateNote {
+    pub title: Option<String>,
+    pub content: Option<String>,
     pub tags: Option<Vec<String>>,
     pub categories: Option<Vec<String>>,
+    pub attachments: Option<Vec<Attachment>>,
+    pub version_history: Option<Vec<Version>>,
+    pub export_options: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Serialize)]

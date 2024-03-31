@@ -1,4 +1,6 @@
-use crate::controllers::{create_note, delete_all_notes, delete_note, get_note_by_id, list_notes};
+use crate::controllers::{
+    delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note, post_new_note,
+};
 use actix_web::{
     web::{self},
     HttpResponse, Responder,
@@ -33,15 +35,13 @@ pub async fn root() -> impl Responder {
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/").route(web::get().to(root)));
     cfg.service(web::resource("/health").route(web::get().to(root)));
+    cfg.service(
+        web::scope("/notes")
+            .route("", web::post().to(post_new_note))
+            .route("", web::get().to(get_all_notes))
+            .route("/{id}", web::get().to(get_note_by_id))
+            .route("/{id}", web::delete().to(delete_note_by_id))
+            .route("/{id}", web::patch().to(patch_note)),
+    );
     cfg.service(web::resource("/reset_notes").route(web::get().to(delete_all_notes)));
-    cfg.service(
-        web::resource("/notes")
-            .route(web::post().to(create_note))
-            .route(web::get().to(list_notes)),
-    );
-    cfg.service(
-        web::resource("/notes/{id}")
-            .route(web::get().to(get_note_by_id))
-            .route(web::delete().to(delete_note)),
-    );
 }
