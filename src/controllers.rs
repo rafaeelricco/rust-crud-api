@@ -2,8 +2,10 @@ use crate::models::{CreateAndUpdateNote, Note};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
 use futures::stream::StreamExt;
+use mongodb::options::FindOptions;
 use mongodb::Database;
 use mongodb::{bson::doc, Collection};
+use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
@@ -17,12 +19,47 @@ fn convert_uuid(uuid: String) -> Uuid {
     }
 }
 
-pub async fn get_all_notes(db: web::Data<Database>) -> impl Responder {
-    let collection = db.collection::<Note>("Notes");
+#[derive(Deserialize)]
+pub struct PaginationParams {
+    page: Option<i64>,
+    page_size: Option<i64>,
+    tag: Option<String>,
+    category: Option<String>,
+    created_after: Option<String>,
+}
+
+pub async fn get_all_notes(
+    db: web::Data<Database>,
+    params: web::Query<PaginationParams>,
+) -> impl Responder {
+    let collection: Collection<Note> = db.collection("Notes");
+
+    let page = params.page.unwrap_or(1);
+    let page_size = params.page_size.unwrap_or(10);
+
+    let skip = (page - 1) * page_size;
+
+    let options = FindOptions::builder()
+        .skip(Some(skip as u64))
+        .limit(Some(page_size as i64))
+        .build();
+
+    let mut filter = doc! {};
+    if let Some(tag) = &params.tag {
+        filter.insert("tags", tag);
+    }
+    if let Some(category) = &params.category {
+        filter.insert("categories", category);
+    }
+    if let Some(created_after) = &params.created_after {
+        filter.insert("created_at", doc! { "$gte": created_after });
+    }
+
     let cursor = collection
-        .find(None, None)
+        .find(filter, Some(options))
         .await
         .expect("Error trying to get notes");
+
     let notes: Vec<Result<Note, mongodb::error::Error>> = cursor.collect().await;
     let notes: Vec<Note> = notes.into_iter().filter_map(Result::ok).collect();
 
@@ -92,7 +129,7 @@ pub async fn post_new_note(
     }
 }
 
-pub async fn patch_note(
+pub async fn patch_note_by_id(
     db: web::Data<Database>,
     id: web::Path<String>,
     info: web::Json<CreateAndUpdateNote>,

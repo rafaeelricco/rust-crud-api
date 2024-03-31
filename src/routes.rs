@@ -1,5 +1,6 @@
 use crate::controllers::{
-    delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note, post_new_note,
+    delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note_by_id,
+    post_new_note,
 };
 use actix_web::{
     web::{self},
@@ -41,7 +42,7 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route("", web::get().to(get_all_notes))
             .route("/{id}", web::get().to(get_note_by_id))
             .route("/{id}", web::delete().to(delete_note_by_id))
-            .route("/{id}", web::patch().to(patch_note)),
+            .route("/{id}", web::patch().to(patch_note_by_id)),
     );
     cfg.service(web::resource("/reset_notes").route(web::get().to(delete_all_notes)));
 }
