@@ -1,8 +1,14 @@
-use dotenv;
-use mongodb::{options::ClientOptions, Client};
-use rust_crud_api::run;
 use std::net::TcpListener;
+use log::info;
+ 
+mod server;
+mod api;
+mod config;
+mod models;
 
+use server::run;
+use config::db;
+ 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -11,16 +17,10 @@ async fn main() -> std::io::Result<()> {
     let db_url = dotenv::var("db_url").expect("A variável de ambiente 'db_url' não está definida. Por favor, defina-a no seu arquivo .env.");
 
     let listener = TcpListener::bind(address.clone()).expect("Failed to bind to the listener");
-    let mut client_options = ClientOptions::parse(db_url)
-        .await
-        .expect("Failed to connect to the server");
-    client_options.app_name = Some("Notes".to_string());
 
-    let client = Client::with_options(client_options).expect("Failed to create client");
-    println!("Connected to the database: {}", dotenv::var("db_url").expect("A variável de ambiente 'db_url' não está definida. Por favor, defina-a no seu arquivo .env."));
+    let db_pool = db::init_db_pool(&db_url).await.expect("Erro ao inicializar o pool de conexões do MongoDB.");
+    let db = db_pool.database("notes_collection");
 
-    let db = client.database("notes_collection");
-
-    println!("Server is running at {}", address);
+    info!("Starting server at http://{}", address);
     run(listener, db)?.await
 }

@@ -1,4 +1,4 @@
-use crate::controllers::{
+use crate::api::controllers::{
     delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note_by_id,
     post_new_note,
 };

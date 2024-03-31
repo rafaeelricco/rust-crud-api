@@ -1,4 +1,4 @@
-use crate::models::{CreateAndUpdateNote, Note};
+use crate::models::notes::{CreateAndUpdateNote, Note};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
 use futures::stream::StreamExt;
