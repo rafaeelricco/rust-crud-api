@@ -1,4 +1,4 @@
-use std::net::TcpListener;
+use std::{env, net::TcpListener};
 use log::info;
  
 mod server;
@@ -12,6 +12,8 @@ use config::db;
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
+    env::set_var("RUST_LOG", "info,actix_web=debug");
+    env_logger::init();
 
     let address = dotenv::var("address").expect("A variável de ambiente 'address' não está definida. Por favor, defina-a no seu arquivo .env.");
     let db_url = dotenv::var("db_url").expect("A variável de ambiente 'db_url' não está definida. Por favor, defina-a no seu arquivo .env.");

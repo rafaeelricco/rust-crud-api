@@ -24,9 +24,5 @@ uuid = { version = "1.8.0", features = [
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]}
-
-[dependencies.mongodb]
-version = "2.8.2"
-default-features = false
-features = ["async-std-runtime"]
-tokio = { version = "1", features = ["full"] }
+mongodb = "2.8.2"
+env_logger = "0.11.3"
