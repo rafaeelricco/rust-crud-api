@@ -1,6 +1,5 @@
 use bson::doc;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct Note {

@@ -3,6 +3,7 @@ use actix_web::{web, HttpResponse, Responder};
 use futures::stream::StreamExt;
 use mongodb::Database;
 use mongodb::{bson::doc, Collection};
+use serde_json::json;
 use uuid::Uuid;
 
 pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> impl Responder {
@@ -79,6 +80,54 @@ pub async fn get_note_by_id(db: web::Data<Database>, id: web::Path<String>) -> i
         Err(e) => {
             println!("Erro ao buscar nota: {:?}", e);
             HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+pub async fn delete_note(db: web::Data<Database>, id: web::Path<String>) -> impl Responder {
+    let uuid = match Uuid::parse_str(&id.into_inner()) {
+        Ok(uuid) => {
+            println!("UUID convertido: {}", uuid);
+            uuid
+        }
+        Err(_) => return HttpResponse::BadRequest().body("Invalid UUID"),
+    };
+
+    println!("Buscando nota com id: {:?}", uuid);
+
+    let collection: Collection<Note> = db.collection("Notes");
+
+    let uuid_bson = uuid.to_string();
+    print!("UUID BSON: {:?}", uuid_bson);
+
+    let filter = doc! { "id": uuid_bson };
+    print!("Filtro: {:?}", filter);
+
+    let note = collection.find_one_and_delete(filter, None).await;
+    println!("Nota: {:?}", note);
+
+    match note {
+        Ok(Some(note)) => {
+            println!("Nota deletada: {:?}", note);
+            let res = json!({
+                "message": "Nota deletada com sucesso!",
+                "nota": note
+            });
+            HttpResponse::Ok().json(res)
+        }
+        Ok(None) => {
+            println!("Nota não encontrada.");
+            let res = json! ({
+                "message": "Oopss! Nota não encontrada. Verifique o ID informado."
+            });
+            HttpResponse::Ok().json(res)
+        }
+        Err(e) => {
+            println!("Erro ao deletar nota: {:?}", e);
+            let res = json! ({
+                "message": "Oopss! Ocorreu um erro ao deletar a nota. Verifique o ID informado."
+            });
+            HttpResponse::Ok().json(res)
         }
     }
 }

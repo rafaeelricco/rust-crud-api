@@ -1,5 +1,8 @@
-use crate::controllers::{create_note, get_note_by_id, list_notes};
-use actix_web::{web, HttpResponse, Responder};
+use crate::controllers::{create_note, delete_note, get_note_by_id, list_notes};
+use actix_web::{
+    web::{self},
+    HttpResponse, Responder,
+};
 use chrono::Utc;
 use serde::Serialize;
 
@@ -33,5 +36,9 @@ pub fn config(cfg: &mut web::ServiceConfig) {
             .route(web::post().to(create_note))
             .route(web::get().to(list_notes)),
     );
-    cfg.service(web::resource("/notes/{id}").route(web::get().to(get_note_by_id)));
+    cfg.service(
+        web::resource("/notes/{id}")
+            .route(web::get().to(get_note_by_id))
+            .route(web::delete().to(delete_note)),
+    );
 }
