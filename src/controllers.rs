@@ -1,5 +1,6 @@
 use crate::models::{NewNote, Note};
 use actix_web::{web, HttpResponse, Responder};
+use chrono::Utc;
 use futures::stream::StreamExt;
 use mongodb::Database;
 use mongodb::{bson::doc, Collection};
@@ -13,6 +14,13 @@ pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> i
         id: Uuid::new_v4().to_string(),
         title: info.title.clone(),
         content: info.content.clone(),
+        created_at: Utc::now().to_rfc3339(),
+        updated_at: Utc::now().to_rfc3339(),
+        tags: info.tags.clone().unwrap_or_default(),
+        categories: info.categories.clone().unwrap_or_default(),
+        attachments: vec![],
+        version_history: vec![],
+        export_options: vec![],
     };
     println!("Nota a ser inserida: {:?}", note);
 
@@ -21,10 +29,7 @@ pub async fn create_note(db: web::Data<Database>, info: web::Json<NewNote>) -> i
     let result = collection.insert_one(note, None).await;
 
     match result {
-        Ok(_) => {
-            println!("Nota inserida com sucesso.");
-            HttpResponse::Ok().json(note_clone)
-        }
+        Ok(_) => HttpResponse::Ok().json(note_clone),
         Err(e) => {
             println!("Erro ao inserir nota: {:?}", e);
             HttpResponse::InternalServerError().finish()
@@ -128,6 +133,27 @@ pub async fn delete_note(db: web::Data<Database>, id: web::Path<String>) -> impl
                 "message": "Oopss! Ocorreu um erro ao deletar a nota. Verifique o ID informado."
             });
             HttpResponse::Ok().json(res)
+        }
+    }
+}
+
+pub async fn delete_all_notes(db: web::Data<Database>) -> impl Responder {
+    let collection: Collection<Note> = db.collection("Notes");
+    let action = collection.delete_many(doc! {}, None).await;
+
+    match action {
+        Ok(delete_result) => {
+            let deleted_count = delete_result.deleted_count;
+            let res = json!({
+                "message": format!("{} notas foram excluídas com sucesso.", deleted_count)
+            });
+            HttpResponse::Ok().json(res)
+        }
+        Err(e) => {
+            println!("Erro ao excluir todas as notas: {:?}", e);
+            let res =
+                json!({ "message": "Oopss! Ocorreu um erro ao tentar excluir todas as notas." });
+            HttpResponse::InternalServerError().json(res)
         }
     }
 }
