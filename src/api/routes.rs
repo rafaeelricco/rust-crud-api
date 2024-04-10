@@ -1,11 +1,15 @@
-use crate::api::controllers::{
-    delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note_by_id,
-    post_new_note,
+use crate::{
+    api::controllers::{
+        delete_all_notes, delete_note_by_id, get_all_notes, get_note_by_id, patch_note_by_id,
+        post_new_note,
+    },
+    handler::authenticate,
 };
 use actix_web::{
     web::{self},
     HttpResponse, Responder,
 };
+use actix_web_httpauth::middleware::HttpAuthentication;
 use chrono::Utc;
 use serde::Serialize;
 
@@ -35,6 +39,7 @@ pub async fn root() -> impl Responder {
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/").route(web::get().to(root)));
+    cfg.service(web::resource("/auth").route(web::post().to(authenticate)));
     cfg.service(web::resource("/health").route(web::get().to(root)));
     cfg.service(
         web::scope("/notes")

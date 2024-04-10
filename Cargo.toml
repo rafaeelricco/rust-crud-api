@@ -26,3 +26,4 @@ uuid = { version = "1.8.0", features = [
 ]}
 mongodb = "2.8.2"
 env_logger = "0.11.3"
+actix-web-httpauth = "0.8.1"

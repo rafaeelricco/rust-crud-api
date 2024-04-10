@@ -45,6 +45,7 @@ pub async fn get_all_notes(
         .build();
 
     let mut filter = doc! {};
+    
     if let Some(tag) = &params.tag {
         filter.insert("tags", tag);
     }

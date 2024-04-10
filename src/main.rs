@@ -1,14 +1,15 @@
-use std::{env, net::TcpListener};
 use log::info;
- 
-mod server;
+use std::{env, net::TcpListener};
+
 mod api;
 mod config;
+mod handler;
 mod models;
+mod server;
 
-use server::run;
 use config::db;
- 
+use server::run;
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
@@ -20,7 +21,9 @@ async fn main() -> std::io::Result<()> {
 
     let listener = TcpListener::bind(address.clone()).expect("Failed to bind to the listener");
 
-    let db_pool = db::init_db_pool(&db_url).await.expect("Erro ao inicializar o pool de conexões do MongoDB.");
+    let db_pool = db::init_db_pool(&db_url)
+        .await
+        .expect("Erro ao inicializar o pool de conexões do MongoDB.");
     let db = db_pool.database("notes_collection");
 
     info!("Starting server at http://{}", address);
