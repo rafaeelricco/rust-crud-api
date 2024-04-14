@@ -7,7 +7,7 @@ mod models;
 mod routes;
 mod server;
 
-use db::db::init_db_pool;
+use db::mongodb::init_db_pool;
 use server::run;
 
 #[tokio::main]
@@ -24,7 +24,7 @@ async fn main() -> std::io::Result<()> {
     let db_pool = init_db_pool(&db_url)
         .await
         .expect("Erro ao inicializar o pool de conexões do MongoDB.");
-    let db = db_pool.database("notes_collection");
+    let db = db_pool.database("rust-actix-web-mongodb");
 
     info!("Starting server at http://{}", address);
     run(listener, db)?.await

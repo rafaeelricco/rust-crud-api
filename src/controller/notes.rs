@@ -9,16 +9,6 @@ use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
 
-fn convert_uuid(uuid: String) -> Uuid {
-    match Uuid::parse_str(&uuid) {
-        Ok(uuid) => {
-            println!("UUID convertido: {}", uuid);
-            uuid
-        }
-        Err(_) => panic!("Invalid UUID"),
-    }
-}
-
 #[derive(Deserialize)]
 pub struct PaginationParams {
     page: Option<i64>,
@@ -101,7 +91,7 @@ pub async fn post_new_note(
     db: web::Data<Database>,
     info: web::Json<CreateAndUpdateNote>,
 ) -> impl Responder {
-    let collection = db.collection::<Note>("Notes");
+    let collection = db.collection::<Note>("notes");
 
     let note = Note {
         id: Uuid::new_v4().to_string(),
@@ -273,5 +263,15 @@ pub async fn delete_all_notes(db: web::Data<Database>) -> impl Responder {
                 json!({ "message": "Oopss! Ocorreu um erro ao tentar excluir todas as notas." });
             HttpResponse::InternalServerError().json(res)
         }
+    }
+}
+
+fn convert_uuid(uuid: String) -> Uuid {
+    match Uuid::parse_str(&uuid) {
+        Ok(uuid) => {
+            println!("UUID convertido: {}", uuid);
+            uuid
+        }
+        Err(_) => panic!("Invalid UUID"),
     }
 }

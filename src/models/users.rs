@@ -1,8 +1,15 @@
+use bson::doc;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct User {
-    pub username: String,
+    pub id: Option<String>,
+    pub email: String,
     pub password: String,
     pub token: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct LogoutRequest {
+    pub email: String,
 }
