@@ -1,9 +1,13 @@
+use crate::middleware::auth::validate_token;
 use crate::models::users::User;
 use crate::{db::mongodb::get_db, models::users::LogoutRequest};
 use actix_web::{web, HttpResponse, Responder};
 use bson::doc;
+use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use log::info;
+use serde_json::Value;
+use std::collections::HashMap;
 use uuid::Uuid;
 
 pub async fn register(body: web::Json<User>) -> impl Responder {
@@ -39,15 +43,18 @@ pub async fn login(body: web::Json<User>) -> impl Responder {
     match result {
         Ok(Some(user)) => {
             if user.password == body.password {
-                let date_n = chrono::Utc::now();
+                let date_now = Utc::now();
+                let expiration_date = date_now + Duration::hours(24);
+
                 let token = encode(
                     &Header::default(),
                     &{
-                        let mut gen_hash = std::collections::HashMap::new();
-                        gen_hash.insert("email", user.email.clone());
-                        gen_hash.insert("id", user.id.clone().unwrap());
-                        gen_hash.insert("date", date_n.to_rfc3339());
-                        gen_hash
+                        let mut jwt = HashMap::new();
+                        jwt.insert("email", Value::String(user.email.clone()));
+                        jwt.insert("id", Value::String(user.id.clone().unwrap()));
+                        jwt.insert("date", Value::String(date_now.to_rfc3339()));
+                        jwt.insert("exp", Value::Number(expiration_date.timestamp().into()));
+                        jwt
                     },
                     &EncodingKey::from_secret("secret".as_ref()),
                 )

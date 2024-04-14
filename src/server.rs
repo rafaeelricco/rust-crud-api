@@ -1,12 +1,14 @@
+// use crate::middleware::auth::auth_middleware;
+// use crate::middleware::auth::AuthMiddleware;
+use crate::routes::notes;
+use crate::routes::users;
 use actix_web::dev::Server;
+use actix_web::HttpRequest;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use chrono::Utc;
 use mongodb::Database;
 use serde::Serialize;
 use std::net::TcpListener;
-
-use crate::routes::notes;
-use crate::routes::users;
 
 #[derive(Serialize)]
 struct ApiInfo {
@@ -38,9 +40,9 @@ pub fn run(listener: TcpListener, db: Database) -> Result<Server, std::io::Error
         App::new()
             .app_data(db.clone())
             .route("/", web::get().to(root))
-            // passar meu arquivo de configuração de rotas
             .configure(notes::configure_note_routes)
             .configure(users::configure_auth_routes)
+        // .wrap(AuthMiddleware)
     })
     .listen(listener)?
     .run();

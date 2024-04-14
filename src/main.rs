@@ -3,6 +3,7 @@ use std::{env, net::TcpListener};
 
 mod controller;
 mod db;
+mod middleware;
 mod models;
 mod routes;
 mod server;
