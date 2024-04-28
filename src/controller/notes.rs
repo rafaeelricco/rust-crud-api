@@ -1,4 +1,3 @@
-use crate::models::notes::{CreateAndUpdateNote, Note};
 use actix_web::{web, HttpResponse, Responder};
 use chrono::Utc;
 use futures::stream::StreamExt;
@@ -8,6 +7,8 @@ use mongodb::{bson::doc, Collection};
 use serde::Deserialize;
 use serde_json::json;
 use uuid::Uuid;
+
+use crate::models::notes::{CreateAndUpdateNote, Note};
 
 #[derive(Deserialize)]
 pub struct PaginationParams {

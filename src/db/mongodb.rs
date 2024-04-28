@@ -17,9 +17,9 @@ pub async fn init_db_pool(url: &str) -> Result<Pool, mongodb::error::Error> {
 }
 
 pub async fn get_db() -> SharedDatabase {
-    let db_url = dotenv::var("db_url").expect("A variável de ambiente 'db_url' não está definida. Por favor, defina-a no seu arquivo .env.");
+    let address = dotenv::var("DB_URL").expect("A variável de ambiente 'DB_URL' não está definida. Por favor, defina-a no seu arquivo .env.");
 
-    let mut client_options = ClientOptions::parse(&db_url)
+    let mut client_options = ClientOptions::parse(&address)
         .await
         .expect("Erro ao inicializar as opções do cliente do MongoDB.");
     client_options.app_name = Some("actix-web-mongodb".to_string());

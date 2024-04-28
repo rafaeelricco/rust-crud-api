@@ -1,6 +1,3 @@
-use crate::middleware::auth::validate_token;
-use crate::models::users::User;
-use crate::{db::mongodb::get_db, models::users::LogoutRequest};
 use actix_web::{web, HttpResponse, Responder};
 use bson::doc;
 use chrono::{Duration, Utc};
@@ -9,6 +6,9 @@ use log::info;
 use serde_json::Value;
 use std::collections::HashMap;
 use uuid::Uuid;
+
+use crate::models::users::User;
+use crate::{db::mongodb::get_db, models::users::LogoutRequest};
 
 pub async fn register(body: web::Json<User>) -> impl Responder {
     let db = get_db().await;
@@ -56,7 +56,7 @@ pub async fn login(body: web::Json<User>) -> impl Responder {
                         jwt.insert("exp", Value::Number(expiration_date.timestamp().into()));
                         jwt
                     },
-                    &EncodingKey::from_secret("secret".as_ref()),
+                    &EncodingKey::from_secret("JWT_SECRET".as_ref()),
                 )
                 .unwrap();
                 info!("Token generated: {:?}", token);

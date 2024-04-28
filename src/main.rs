@@ -17,8 +17,8 @@ async fn main() -> std::io::Result<()> {
     env::set_var("RUST_LOG", "info,actix_web=debug");
     env_logger::init();
 
-    let address = dotenv::var("address").expect("A variável de ambiente 'address' não está definida. Por favor, defina-a no seu arquivo .env.");
-    let db_url = dotenv::var("db_url").expect("A variável de ambiente 'db_url' não está definida. Por favor, defina-a no seu arquivo .env.");
+    let address = dotenv::var("HOST").expect("A variável de ambiente 'address' não está definida. Por favor, defina-a no seu arquivo .env.");
+    let db_url = dotenv::var("DB_URL").expect("A variável de ambiente 'DB_URL' não está definida. Por favor, defina-a no seu arquivo .env.");
 
     let listener = TcpListener::bind(address.clone()).expect("Failed to bind to the listener");
 
