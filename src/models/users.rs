@@ -10,6 +10,11 @@ pub struct User {
 }
 
 #[derive(Clone, Deserialize, Serialize, Debug)]
+pub struct UserLoginResponse {
+    pub token: String,
+}
+
+#[derive(Clone, Deserialize, Serialize, Debug)]
 pub struct LogoutRequest {
     pub email: String,
 }

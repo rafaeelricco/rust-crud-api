@@ -39,9 +39,9 @@ pub async fn validate_token(token: &str) -> Result<bool, bool> {
 
             let db = get_db().await;
             let collection = db.collection::<User>("users");
-            info!("Buscando usuário no banco de dados...");
+            info!("Buscando usuários com id: {}", claims.id);
 
-            let filter = doc! { "id": claims.id };
+            let filter = doc! { "id": claims.id, "email": claims.email };
             let user = collection.find_one(filter, None).await;
 
             match user {

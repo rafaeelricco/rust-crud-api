@@ -61,7 +61,8 @@ where
             let is_valid = validate_token(&token).await;
 
             if is_valid.is_err() {
-                let message = doc! { "message": "Unauthorized access. Please provide a valid token.", "status": 401 };
+                let message =
+                    doc! { "message": "Unauthorized access.", "error": "InvalidSignature" };
                 return Err(actix_web::error::ErrorUnauthorized(message.to_string()));
             }
 

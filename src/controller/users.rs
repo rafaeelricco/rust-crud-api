@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-use crate::models::users::User;
+use crate::models::users::{User, UserLoginResponse};
 use crate::{db::mongodb::get_db, models::users::LogoutRequest};
 
 pub async fn register(body: web::Json<User>) -> impl Responder {
@@ -60,7 +60,6 @@ pub async fn login(body: web::Json<User>) -> impl Responder {
                 )
                 .unwrap();
                 info!("Token generated: {:?}", token);
-
                 let token_cl = token.clone();
 
                 let filter = doc! { "email": user.email.clone() };
@@ -69,9 +68,8 @@ pub async fn login(body: web::Json<User>) -> impl Responder {
 
                 match result {
                     Ok(_) => {
-                        let mut user_cl = user.clone();
-                        user_cl.token = Some(token_cl);
-                        return HttpResponse::Ok().json(user_cl);
+                        let login_response = UserLoginResponse { token: token_cl };
+                        return HttpResponse::Ok().json(login_response);
                     }
                     Err(e) => {
                         println!("Erro ao atualizar token do usuário: {:?}", e);
