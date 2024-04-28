@@ -15,15 +15,11 @@ struct Claims {
 }
 
 pub async fn validate_token(token: &str) -> Result<bool, bool> {
-    info!("Iniciando validação do token...");
-
     let token_decoded = decode::<Claims>(
         &token,
         &DecodingKey::from_secret("JWT_SECRET".as_ref()),
         &Validation::new(Algorithm::HS256),
     );
-
-    info!("Token decodificado: {:?}", token_decoded);
 
     match token_decoded {
         Ok(TokenData { claims, .. }) => {
@@ -39,17 +35,13 @@ pub async fn validate_token(token: &str) -> Result<bool, bool> {
 
             let db = get_db().await;
             let collection = db.collection::<User>("users");
-            info!("Buscando usuários com id: {}", claims.id);
 
             let filter = doc! { "id": claims.id, "email": claims.email };
             let user = collection.find_one(filter, None).await;
 
             match user {
-                Ok(Some(user)) => {
-                    info!("Usuário encontrado: {:?}", user.email);
-                    if user.token == Some(token.to_string()) {
-                        return Ok(true);
-                    }
+                Ok(Some(_)) => {
+                    return Ok(true);
                 }
                 Ok(None) => {
                     return Err(false);
@@ -65,6 +57,4 @@ pub async fn validate_token(token: &str) -> Result<bool, bool> {
             return Err(false);
         }
     }
-
-    Err(false)
 }

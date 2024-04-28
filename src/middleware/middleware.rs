@@ -5,7 +5,7 @@ use bson::doc;
 use futures_util::future::LocalBoxFuture;
 use std::future::{ready, Ready};
 
-use crate::middleware::auth::validate_token;
+use crate::middleware::jwt::validate_token;
 
 pub struct AuthCheck;
 
