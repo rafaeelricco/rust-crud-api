@@ -15,7 +15,7 @@ struct Claims {
 }
 
 pub async fn validate_token(token: &str) -> Result<bool, bool> {
-    let token_cl = token.clone();
+    let token_prop = token.to_string();
     let token_decoded = decode::<Claims>(
         &token,
         &DecodingKey::from_secret("JWT_SECRET".as_ref()),
@@ -43,8 +43,8 @@ pub async fn validate_token(token: &str) -> Result<bool, bool> {
 
             match user {
                 Ok(Some(user)) => {
-                    if let Some(token) = &user.token {
-                        if token == token_cl {
+                    if let Some(token) = user.token {
+                        if token == token_prop {
                             return Ok(true);
                         } else {
                             return Err(false);

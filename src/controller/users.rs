@@ -142,9 +142,7 @@ pub async fn logout(body: web::Json<LogoutRequest>) -> impl Responder {
 
     match result {
         Ok(_) => HttpResponse::Ok().json({
-            let filter = doc! { "email": body.email.clone() };
-            let user = collection.find_one(filter, None).await.unwrap().unwrap();
-            user
+            doc! { "message": "Usuário deslogado com sucesso.", "status": 200 }
         }),
         Err(e) => {
             println!("Erro ao deslogar usuário: {:?}", e);
