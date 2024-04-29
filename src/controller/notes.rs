@@ -109,7 +109,6 @@ pub async fn post_new_note(
     println!("Nota a ser inserida: {:?}", note);
 
     let note_clone = note.clone();
-
     let result = collection.insert_one(note, None).await;
 
     match result {

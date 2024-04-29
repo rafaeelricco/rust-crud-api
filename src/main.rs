@@ -16,6 +16,7 @@ async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
     env::set_var("RUST_LOG", "info,actix_web=debug");
     env_logger::init();
+    info!("Starting server...");
 
     let address = dotenv::var("HOST").expect("A variável de ambiente 'address' não está definida. Por favor, defina-a no seu arquivo .env.");
     let db_url = dotenv::var("DB_URL").expect("A variável de ambiente 'DB_URL' não está definida. Por favor, defina-a no seu arquivo .env.");
