@@ -85,7 +85,10 @@ pub async fn register(body: web::Json<User>) -> impl Responder {
 
     let token = generate_token(user.clone());
 
-    update_user_token(user.clone(), token.clone()).await;
+    let usr_with_token = User {
+        token: Some(token.clone()),
+        ..user.clone()
+    };
 
     let usr_response = json!({
         "id": user.id.clone().unwrap(),
@@ -93,7 +96,7 @@ pub async fn register(body: web::Json<User>) -> impl Responder {
         "token": token.clone()
     });
 
-    let result = collection.insert_one(user, None).await;
+    let result = collection.insert_one(usr_with_token, None).await;
 
     match result {
         Ok(_) => HttpResponse::Ok().json(usr_response),
