@@ -1,4 +1,6 @@
+use db::mongodb::init_db_pool;
 use log::info;
+use server::run;
 use std::{env, net::TcpListener};
 
 mod controller;
@@ -7,9 +9,6 @@ mod middleware;
 mod models;
 mod routes;
 mod server;
-
-use db::mongodb::init_db_pool;
-use server::run;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {

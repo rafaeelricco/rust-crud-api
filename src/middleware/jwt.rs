@@ -1,10 +1,9 @@
+use crate::{db::mongodb::get_db, models::users::User};
 use bson::doc;
 use jsonwebtoken::{decode, Algorithm, DecodingKey, TokenData, Validation};
 use log::info;
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
-
-use crate::{db::mongodb::get_db, models::users::User};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Claims {
