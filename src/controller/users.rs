@@ -41,11 +41,11 @@ pub async fn update_user_token(user: User, token: String) -> HttpResponse {
 
     match result {
         Ok(_) => {
-            info!("Token atualizado com sucesso.");
+            info!("Token updated successfully.");
             HttpResponse::Ok().finish()
         }
         Err(e) => {
-            println!("Erro ao atualizar token: {:?}", e);
+            println!("Failed to update token: {:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -55,7 +55,7 @@ pub async fn register(body: web::Json<User>) -> impl Responder {
     let validate_email = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").unwrap();
 
     if !validate_email.is_match(&body.email) {
-        return HttpResponse::Ok().json(doc! { "message": "O email informado é inválido. Por favor, informe um email válido. Ex: example@gmail.com", "status": 400 });
+        return HttpResponse::Ok().json(doc! { "message": "The email provided is invalid. Please provide a valid email. E.g.: example@gmail.com", "status": 400 });
     }
 
     let db = get_db().await;
@@ -67,10 +67,10 @@ pub async fn register(body: web::Json<User>) -> impl Responder {
     match verify_email {
         Ok(Some(_)) => {
             return HttpResponse::Ok()
-                .json(doc! { "message": "Email já cadastrado.", "status": 409 })
+                .json(doc! { "message": "Email already registered.", "status": 409 })
         }
         Err(e) => {
-            println!("Erro ao verificar email: {:?}", e);
+            println!("Failed to verify email: {:?}", e);
             return HttpResponse::InternalServerError().finish();
         }
         _ => {}
@@ -101,7 +101,7 @@ pub async fn register(body: web::Json<User>) -> impl Responder {
     match result {
         Ok(_) => HttpResponse::Ok().json(usr_response),
         Err(e) => {
-            println!("Erro ao inserir usuário: {:?}", e);
+            println!("Failed to insert user: {:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -129,7 +129,7 @@ pub async fn login(body: web::Json<User>) -> impl Responder {
         }
         Ok(None) => return HttpResponse::NotFound().finish(),
         Err(e) => {
-            println!("Erro ao buscar usuário: {:?}", e);
+            println!("Failed to fetch user: {:?}", e);
             return HttpResponse::InternalServerError().finish();
         }
     }
@@ -145,10 +145,10 @@ pub async fn logout(body: web::Json<LogoutRequest>) -> impl Responder {
 
     match result {
         Ok(_) => HttpResponse::Ok().json({
-            doc! { "message": "Usuário deslogado com sucesso.", "status": 200 }
+            doc! { "message": "User logged out successfully.", "status": 200 }
         }),
         Err(e) => {
-            println!("Erro ao deslogar usuário: {:?}", e);
+            println!("Failed to log out user: {:?}", e);
             HttpResponse::InternalServerError().finish()
         }
     }
