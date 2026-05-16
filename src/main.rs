@@ -17,14 +17,14 @@ async fn main() -> std::io::Result<()> {
     env_logger::init();
     info!("Starting server...");
 
-    let address = dotenv::var("HOST").expect("A variável de ambiente 'address' não está definida. Por favor, defina-a no seu arquivo .env.");
-    let db_url = dotenv::var("DB_URL").expect("A variável de ambiente 'DB_URL' não está definida. Por favor, defina-a no seu arquivo .env.");
+    let address = dotenv::var("HOST").expect("Environment variable 'HOST' is not set. Please define it in your .env file.");
+    let db_url = dotenv::var("DB_URL").expect("Environment variable 'DB_URL' is not set. Please define it in your .env file.");
 
     let listener = TcpListener::bind(address.clone()).expect("Failed to bind to the listener");
 
     let db_pool = init_db_pool(&db_url)
         .await
-        .expect("Erro ao inicializar o pool de conexões do MongoDB.");
+        .expect("Failed to initialize the MongoDB connection pool.");
     let db = db_pool.database("rust-actix-web-mongodb");
 
     info!("Starting server at http://{}", address);

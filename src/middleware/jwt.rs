@@ -29,7 +29,7 @@ pub async fn validate_token(token: &str) -> Result<bool, bool> {
                 .as_secs() as usize;
 
             if current_time >= claims.exp {
-                info!("Token expirado.");
+                info!("Token expired.");
                 return Err(false);
             }
 

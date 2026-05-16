@@ -17,15 +17,15 @@ pub async fn init_db_pool(url: &str) -> Result<Pool, mongodb::error::Error> {
 }
 
 pub async fn get_db() -> SharedDatabase {
-    let address = dotenv::var("DB_URL").expect("A variável de ambiente 'DB_URL' não está definida. Por favor, defina-a no seu arquivo .env.");
+    let address = dotenv::var("DB_URL").expect("Environment variable 'DB_URL' is not set. Please define it in your .env file.");
 
     let mut client_options = ClientOptions::parse(&address)
         .await
-        .expect("Erro ao inicializar as opções do cliente do MongoDB.");
+        .expect("Failed to initialize MongoDB client options.");
     client_options.app_name = Some("actix-web-mongodb".to_string());
 
     let client =
-        Client::with_options(client_options).expect("Erro ao inicializar o cliente do MongoDB.");
+        Client::with_options(client_options).expect("Failed to initialize MongoDB client.");
     let db = client.database("rust-actix-web-mongodb");
 
     Arc::new(db)
